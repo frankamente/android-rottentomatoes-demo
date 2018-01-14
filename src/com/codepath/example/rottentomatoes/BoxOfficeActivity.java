@@ -14,12 +14,16 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
+import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 public class BoxOfficeActivity extends Activity {
+
+	private AsyncHttpClient client;
+
 	private ListView lvMovies;
 	private BoxOfficeMoviesAdapter adapterMovies;
-	private RottenTomatoesClient client;
 	public static final String MOVIE_DETAIL_KEY = "movie";
 
 	@Override
@@ -30,14 +34,13 @@ public class BoxOfficeActivity extends Activity {
 		ArrayList<BoxOfficeMovie> aMovies = new ArrayList<BoxOfficeMovie>();
 		adapterMovies = new BoxOfficeMoviesAdapter(this, aMovies);
 		lvMovies.setAdapter(adapterMovies);
-		// Fetch the data remotely
-		fetchBoxOfficeMovies();
-		setupMovieSelectedListener();
-	}
 
-	private void fetchBoxOfficeMovies() {
-		client = new RottenTomatoesClient();
-		client.getBoxOfficeMovies(new JsonHttpResponseHandler() {
+
+		// Fetch the data remotely
+		this.client = new AsyncHttpClient();
+		String url = "http://api.rottentomatoes.com/api/public/v1.0/lists/movies/box_office.json";
+		RequestParams params = new RequestParams("apikey", "9htuhtcb4ymusd73d4z6jxcj");
+		client.get(url, params,new JsonHttpResponseHandler() {
 			@Override
 			public void onSuccess(int code, JSONObject body) {
 				JSONArray items = null;
@@ -53,17 +56,14 @@ public class BoxOfficeActivity extends Activity {
 				}
 			}
 		});
-	}
-	
-	public void setupMovieSelectedListener() {
-		lvMovies.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> adapterView, View item, int position, long rowId) {
-				Intent i = new Intent(BoxOfficeActivity.this, BoxOfficeDetailActivity.class);
-				i.putExtra(MOVIE_DETAIL_KEY, adapterMovies.getItem(position));
-				startActivity(i);
-			}
-		});
-	}
 
+        lvMovies.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View item, int position, long rowId) {
+                Intent i = new Intent(BoxOfficeActivity.this, BoxOfficeDetailActivity.class);
+                i.putExtra(MOVIE_DETAIL_KEY, adapterMovies.getItem(position));
+                startActivity(i);
+            }
+        });
+	}
 }
